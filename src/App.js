@@ -1,24 +1,15 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import LandingPage from "./components/LandingPage";
+import History from "./components/History";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Sakxam<code></code> 
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />{" "}
+      <Route path="/history" element={<History />} />{" "}
+    </Routes>
   );
 }
 
