@@ -13,9 +13,8 @@ function Login() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      alert("Login successful!");
       navigate("/dashboard");
-      
+
     } catch (error) {
       console.error("Error logging in:", error.message);
       alert(error.message);
