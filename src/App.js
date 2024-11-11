@@ -5,6 +5,8 @@ import LandingPage from "./components/LandingPage";
 import History from "./components/History";
 import Signup from "./components/SignUp";
 import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
       <Route path="/history" element={<History />} />{" "}
       <Route path="/signup" element={<Signup />} /> 
       <Route path="/login" element={<Login />} /> 
+      <Route path = "/dashboard" element = {<Dashboard />} />
       
     </Routes>
   );
