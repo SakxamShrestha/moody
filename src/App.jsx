@@ -1,12 +1,11 @@
-// App.js
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
-import History from "./components/History";
+import History from "./components/JournalHistory";
 import Signup from "./components/SignUp";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
-import Journal from "./components/Journal";
+import Journal from "./components/NewJournal";
 
 function App() {
   return (
@@ -17,6 +16,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/new-journal" element={<Journal />} />
+      <Route path="/journal-history" element={<History />} />
     </Routes>
   );
 }
