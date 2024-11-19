@@ -6,6 +6,7 @@ import Signup from "./components/SignUp";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import Journal from "./components/NewJournal";
+import Resources from "./components/Resources";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/new-journal" element={<Journal />} />
       <Route path="/journal-history" element={<History />} />
+      <Route path="/resources" element={<Resources />} />
     </Routes>
   );
 }
