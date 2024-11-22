@@ -15,7 +15,7 @@ function Signup() {
     e.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+      navigate("/avatar-selection");
     } catch (error) {
       console.error("Error signing up:", error.message);
       alert(error.message);

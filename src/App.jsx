@@ -1,24 +1,23 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
-import History from "./components/JournalHistory";
-import Signup from "./components/SignUp";
-import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
-import Journal from "./components/NewJournal";
-import Resources from "./components/Resources";
+import Login from "./components/Login";
+import SignUp from "./components/SignUp";
+import NewJournal from "./components/NewJournal";
+import JournalHistory from "./components/JournalHistory";
+import AvatarSelection from './components/AvatarSelection';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />{" "}
-      <Route path="/history" element={<History />} />{" "}
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/new-journal" element={<Journal />} />
-      <Route path="/journal-history" element={<History />} />
-      <Route path="/resources" element={<Resources />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/new-journal" element={<NewJournal />} />
+      <Route path="/journal-history" element={<JournalHistory />} />
+      <Route path="/avatar-selection" element={<AvatarSelection />} />
     </Routes>
   );
 }
