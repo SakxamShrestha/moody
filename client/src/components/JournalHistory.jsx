@@ -1,28 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { db } from './firebaseConfig';
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, query, where, orderBy } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrash, FaBook, FaPlus, FaTimes } from 'react-icons/fa';
+import { useAuth } from '../hooks/useAuth';
 
 function JournalHistory() {
+  const { user } = useAuth();
   const [entries, setEntries] = useState([]);
   const [deleteMessage, setDeleteMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedJournalId, setSelectedJournalId] = useState(null);
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+    if (user) {
+      fetchEntries();
+    }
+  }, [user]);
 
   const fetchEntries = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "journals"));
+      const journalsRef = collection(db, "journals");
+      const q = query(
+        journalsRef,
+        where('userId', '==', user.uid),
+        orderBy('dateCreated', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
       const entriesList = [];
       querySnapshot.forEach((doc) => {
-        entriesList.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        console.log('Journal entry:', data);
+        entriesList.push({ 
+          id: doc.id, 
+          ...data,
+          dateCreated: data.dateCreated
+        });
       });
       setEntries(entriesList);
+      console.log('All entries:', entriesList);
     } catch (error) {
       console.error("Error fetching documents: ", error);
     }

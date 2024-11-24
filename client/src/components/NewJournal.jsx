@@ -4,6 +4,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaBook, FaSave } from "react-icons/fa";
+import { useAuth } from '../hooks/useAuth';
 
 // Sentiment Analysis Function
 const analyzeSentiment = (text) => {
@@ -40,12 +41,13 @@ const analyzeSentiment = (text) => {
 };
 
 function NewJournal() {
+  const { user } = useAuth();
   const [journal, setJournal] = useState({
     title: "",
     content: "",
   });
   const [savedMessage, setSavedMessage] = useState("");
-  const [sentimentScore, setSentimentScore] = useState(null); // Add state for sentiment score
+  const [sentimentScore, setSentimentScore] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -58,29 +60,32 @@ function NewJournal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!auth.currentUser) {
+    if (!user) {
       alert("You must be logged in to create a journal entry");
+      navigate('/login');
       return;
     }
 
     try {
-      const sentimentScore = analyzeSentiment(journal.content); // Calculate sentiment score
-      setSentimentScore(sentimentScore); // Update state with sentiment score
+      const score = analyzeSentiment(journal.content);
+      setSentimentScore(score);
 
-      await addDoc(collection(db, "journals"), {
+      const docRef = await addDoc(collection(db, "journals"), {
         title: journal.title,
         content: journal.content,
-        userId: auth.currentUser.uid,
+        userId: user.uid,
         dateCreated: serverTimestamp(),
-        sentimentScore: sentimentScore,
+        sentimentScore: score,
       });
 
-      setJournal({ title: "", content: "" });
-      setSavedMessage("Journal saved successfully!");
-      setTimeout(() => {
-        setSavedMessage("");
-        navigate("/journal-history");
-      }, 2000);
+      if (docRef.id) {
+        setJournal({ title: "", content: "" });
+        setSavedMessage("Journal saved successfully!");
+        setTimeout(() => {
+          setSavedMessage("");
+          navigate("/journal-history");
+        }, 2000);
+      }
     } catch (error) {
       console.error("Error adding document: ", error);
       setSavedMessage("Failed to save the journal: " + error.message);
@@ -157,7 +162,7 @@ function NewJournal() {
             />
           </div>
 
-          <div className="flex justify-between items-center">
+          <div className="flex justify-center items-center">
             <button
               type="submit"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-md"
@@ -168,7 +173,7 @@ function NewJournal() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className={`text-sm px-4 py-2 rounded-lg ${
+                className={`absolute mt-16 text-sm px-4 py-2 rounded-lg ${
                   savedMessage.includes("Failed")
                     ? "bg-red-50 text-red-600"
                     : "bg-green-50 text-green-600"

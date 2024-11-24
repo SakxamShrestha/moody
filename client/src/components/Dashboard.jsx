@@ -6,9 +6,11 @@ import { auth, db } from './firebaseConfig';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { avatars } from '../utils/avatars';
+import { useAuth } from '../hooks/useAuth';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [moodSuggestion, setMoodSuggestion] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -16,7 +18,8 @@ function Dashboard() {
   const [writingStreak, setWritingStreak] = useState(0);
   const [moodTrend, setMoodTrend] = useState({
     label: 'Neutral',
-    score: 0
+    score: 0,
+    sentimentScore: 0
   });
   const [recentJournals, setRecentJournals] = useState([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -25,58 +28,98 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!auth.currentUser) {
+      if (loading) return;
+      
+      if (!user) {
         navigate('/login');
         return;
       }
 
       try {
-        // Fetch recent journals
         const journalsRef = collection(db, "journals");
         const q = query(
           journalsRef,
-          where('userId', '==', auth.currentUser.uid),
-          orderBy('dateCreated', 'desc'),
-          limit(3)
+          where('userId', '==', user.uid),
+          orderBy('dateCreated', 'desc')
         );
         
         const querySnapshot = await getDocs(q);
-        const journalsList = [];
+        const allJournals = [];
         querySnapshot.forEach((doc) => {
-          journalsList.push({ 
+          const data = doc.data();
+          allJournals.push({ 
             id: doc.id, 
-            ...doc.data(),
-            dateCreated: doc.data().dateCreated?.toDate()
+            ...data,
+            dateCreated: data.dateCreated?.toDate()
           });
         });
-        setRecentJournals(journalsList);
-        
-        // Update stats
-        setTotalEntries(journalsList.length);
-        calculateWritingStreak(journalsList);
-        analyzeMoodTrend(journalsList);
+
+        setTotalEntries(allJournals.length);
+        const streak = calculateWritingStreak(allJournals);
+        setWritingStreak(streak);
+        const moodAnalysis = analyzeMoodTrend(allJournals);
+        setMoodTrend(moodAnalysis);
+        setRecentJournals(allJournals.slice(0, 3));
       } catch (error) {
         console.error('Error fetching journals:', error);
       }
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, [user, loading, navigate]);
 
   const calculateWritingStreak = (journals) => {
-    // Implement streak calculation logic
-    setWritingStreak(journals.length > 0 ? Math.min(journals.length, 7) : 0);
+    if (!journals || journals.length === 0) return 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Sort journals by date in descending order
+    const sortedJournals = journals.sort((a, b) => 
+      b.dateCreated - a.dateCreated
+    );
+
+    let streak = 0;
+    let currentDate = new Date(today);
+
+    for (let i = 0; i < sortedJournals.length; i++) {
+      const journalDate = new Date(sortedJournals[i].dateCreated);
+      journalDate.setHours(0, 0, 0, 0);
+
+      // If we find a gap in consecutive days, break the streak
+      if (i > 0) {
+        const prevDate = new Date(currentDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        if (journalDate.getTime() !== prevDate.getTime()) {
+          break;
+        }
+      }
+
+      streak++;
+      currentDate = journalDate;
+    }
+
+    return streak;
   };
 
   const analyzeMoodTrend = (journals) => {
-    // Simple mood trend analysis
+    if (!journals || journals.length === 0) {
+      return {
+        score: 0,
+        label: 'Neutral'
+      };
+    }
+
     const recentMoods = journals.slice(0, 5).map(j => j.sentimentScore || 0);
     const avgMood = recentMoods.reduce((a, b) => a + b, 0) / recentMoods.length;
     
-    setMoodTrend({
+    return {
       score: avgMood,
-      label: avgMood > 0 ? 'Positive' : avgMood < 0 ? 'Negative' : 'Neutral'
-    });
+      label: avgMood > 0.5 ? 'Very Positive' :
+             avgMood > 0 ? 'Positive' :
+             avgMood < -0.5 ? 'Very Negative' :
+             avgMood < 0 ? 'Negative' : 'Neutral'
+    };
   };
 
   const handleDarkModeToggle = () => {
@@ -267,10 +310,12 @@ function Dashboard() {
             className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-xl shadow-lg`}
           >
             <div className="flex items-center gap-4">
-              <FaChartLine className={`text-2xl ${moodTrend.score > 0 ? 'text-green-500' : 'text-red-500'}`} />
+              <FaChartLine className={`text-2xl ${
+                (moodTrend?.score || 0) > 0 ? 'text-green-500' : 'text-red-500'
+              }`} />
               <div>
                 <h3 className="text-lg font-semibold">Mood Trend</h3>
-                <p className="text-3xl font-bold">{moodTrend.label}</p>
+                <p className="text-3xl font-bold">{moodTrend?.label || 'Neutral'}</p>
               </div>
             </div>
           </motion.div>
