@@ -1,90 +1,94 @@
 // Login.jsx
-import React, { useState } from "react";
-import { auth } from "./firebaseConfig";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebaseConfig';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); 
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/dashboard");
-
     } catch (error) {
-      console.error("Error logging in:", error.message);
-      alert(error.message);
+      setError('Invalid email or password');
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#3b82f6",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "white",
-      }}
-    >
-      <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1.5rem" }}>
-        Log In to Moody
-      </h1>
-      <form
-        onSubmit={handleLogin}
-        style={{
-          backgroundColor: "#1f2937",
-          padding: "2rem",
-          borderRadius: "0.5rem",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
       >
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{
-            marginBottom: "1rem",
-            padding: "0.5rem",
-            width: "100%",
-            borderRadius: "0.25rem",
-            color: "black",
-          }}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            marginBottom: "1rem",
-            padding: "0.5rem",
-            width: "100%",
-            borderRadius: "0.25rem",
-            color: "black",
-          }}
-          required
-        />
-        <button
-          type="submit"
-          style={{
-            backgroundColor: "#2563eb",
-            padding: "0.5rem 1.5rem",
-            borderRadius: "0.25rem",
-            color: "white",
-          }}
-        >
-          Log In
-        </button>
-      </form>
+        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-white/20">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">Welcome Back</h1>
+            <p className="text-blue-100">Sign in to continue your journaling journey</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-100" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/10 border border-blue-200/20 rounded-xl px-10 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-100" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/10 border border-blue-200/20 rounded-xl px-10 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                required
+              />
+            </div>
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-red-300 text-center"
+              >
+                {error}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-white text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors duration-200"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-blue-100">Don't have an account?</p>
+            <Link
+              to="/signup"
+              className="text-white font-semibold hover:text-blue-200 transition-colors"
+            >
+              Sign up here
+            </Link>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
