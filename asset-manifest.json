@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/moody/static/css/main.200d152b.css",
+    "main.js": "/moody/static/js/main.629f23ac.js",
+    "index.html": "/moody/index.html",
+    "main.200d152b.css.map": "/moody/static/css/main.200d152b.css.map",
+    "main.629f23ac.js.map": "/moody/static/js/main.629f23ac.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.200d152b.css",
+    "static/js/main.629f23ac.js"
+  ]
+}
