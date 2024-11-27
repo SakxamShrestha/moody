@@ -6,9 +6,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaEnvelope, FaLock, FaUser, FaTimes } from "react-icons/fa";
 import { avatars } from '../utils/avatars';
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 
 function Signup() {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: ""
+  });
   const [error, setError] = useState("");
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const navigate = useNavigate();
@@ -21,7 +28,24 @@ function Signup() {
         credentials.email, 
         credentials.password
       );
-      setShowAvatarSelector(true);
+      
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        firstName: credentials.firstName,
+        lastName: credentials.lastName,
+        email: credentials.email,
+        emailReminders: {
+          enabled: true,
+          preferredTime: "20:00" // Default to 8 PM
+        },
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+      });
+      
+      await updateProfile(auth.currentUser, {
+        displayName: `${credentials.firstName} ${credentials.lastName}`
+      });
+      
+      navigate('/dashboard');
     } catch (error) {
       setError(error.message);
     }
@@ -52,6 +76,30 @@ function Signup() {
           </div>
 
           <form onSubmit={handleSignup} className="space-y-6">
+            <div className="relative">
+              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-100" />
+              <input
+                type="text"
+                placeholder="First Name"
+                value={credentials.firstName}
+                onChange={(e) => setCredentials({ ...credentials, firstName: e.target.value })}
+                className="w-full bg-white/10 border border-blue-200/20 rounded-xl px-10 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-100" />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={credentials.lastName}
+                onChange={(e) => setCredentials({ ...credentials, lastName: e.target.value })}
+                className="w-full bg-white/10 border border-blue-200/20 rounded-xl px-10 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                required
+              />
+            </div>
+
             <div className="relative">
               <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-100" />
               <input
